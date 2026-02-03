@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fire Development Stages: Grid Interaction</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <div>
+          <h1>Fire Development Stage Assessment</h1>
+          <p>
+            Drag the correct fire stage label onto each fire scene image. Work quickly — the
+            countdown timer is running.
+          </p>
+          <p class="app__note">
+            Image placeholders live in <strong>images/scene-1.svg</strong> through
+            <strong>images/scene-9.svg</strong>. Replace those files to update the visuals.
+          </p>
+        </div>
+        <div class="app__controls">
+          <div class="score" aria-live="polite">
+            <span class="score__label">Score</span>
+            <span class="score__value" id="scoreDisplay">0 / 9</span>
+          </div>
+          <div class="timer" aria-live="polite">
+            <span class="timer__label">Time Remaining</span>
+            <span class="timer__value" id="timerDisplay">01:30</span>
+          </div>
+          <button class="pause-button" id="pauseButton" type="button">Pause</button>
+        </div>
+      </header>
+
+      <section class="labels" aria-label="Fire stage labels">
+        <h2>Stage Labels</h2>
+        <div class="labels__list" id="labelBank">
+          <button class="label" draggable="true" data-stage="Incipient Stage" type="button">
+            Incipient Stage
+          </button>
+          <button class="label" draggable="true" data-stage="Growth Stage" type="button">
+            Growth Stage
+          </button>
+          <button class="label" draggable="true" data-stage="Fully Developed Stage" type="button">
+            Fully Developed Stage
+          </button>
+          <button class="label" draggable="true" data-stage="Decay Stage" type="button">
+            Decay Stage
+          </button>
+        </div>
+      </section>
+
+      <section class="grid" aria-label="Fire scene grid">
+        <div class="grid__overlay" id="pauseOverlay" aria-hidden="true">
+          <p>Paused</p>
+        </div>
+        <div class="grid__inner" id="grid">
+          <article class="grid__cell" data-stage="Incipient Stage" data-scene="A">
+            <div class="grid__image scene-1"></div>
+            <div class="grid__status" aria-live="polite"></div>
+          </article>
+          <article class="grid__cell" data-stage="Growth Stage" data-scene="B">
+            <div class="grid__image scene-2"></div>
+            <div class="grid__status" aria-live="polite"></div>
+          </article>
+          <article class="grid__cell" data-stage="Fully Developed Stage" data-scene="C">
+            <div class="grid__image scene-3"></div>
+            <div class="grid__status" aria-live="polite"></div>
+          </article>
+          <article class="grid__cell" data-stage="Decay Stage" data-scene="D">
+            <div class="grid__image scene-4"></div>
+            <div class="grid__status" aria-live="polite"></div>
+          </article>
+          <article class="grid__cell" data-stage="Growth Stage" data-scene="E">
+            <div class="grid__image scene-5"></div>
+            <div class="grid__status" aria-live="polite"></div>
+          </article>
+          <article class="grid__cell" data-stage="Incipient Stage" data-scene="F">
+            <div class="grid__image scene-6"></div>
+            <div class="grid__status" aria-live="polite"></div>
+          </article>
+          <article class="grid__cell" data-stage="Decay Stage" data-scene="G">
+            <div class="grid__image scene-7"></div>
+            <div class="grid__status" aria-live="polite"></div>
+          </article>
+          <article class="grid__cell" data-stage="Fully Developed Stage" data-scene="H">
+            <div class="grid__image scene-8"></div>
+            <div class="grid__status" aria-live="polite"></div>
+          </article>
+          <article class="grid__cell" data-stage="Growth Stage" data-scene="I">
+            <div class="grid__image scene-9"></div>
+            <div class="grid__status" aria-live="polite"></div>
+          </article>
+        </div>
+      </section>
+
+      <footer class="app__footer">
+        <p id="completionMessage" aria-live="polite"></p>
+      </footer>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
