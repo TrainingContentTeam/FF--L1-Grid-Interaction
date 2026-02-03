@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#1f2937" />
+  <path d="M200 410 C280 220 400 220 440 100 C460 220 540 280 540 410" fill="#fbbf24" />
+  <text x="90" y="80" fill="#ffffff" font-size="28" font-family="Arial">Flashover near</text>
+</svg>
