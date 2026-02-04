@@ -1,8 +1,10 @@
 const TIME_LIMIT_SECONDS = 90;
+const GRID_SIZE = 3; // 3x3 grid
+const TOTAL_SCENES = 15;
 
 const timerDisplay = document.getElementById("timerDisplay");
 const pauseButton = document.getElementById("pauseButton");
-const grid = document.getElementById("grid");
+const gridContainer = document.getElementById("grid");
 const pauseOverlay = document.getElementById("pauseOverlay");
 const completionMessage = document.getElementById("completionMessage");
 
@@ -11,8 +13,84 @@ let timerId = null;
 let isPaused = false;
 let isComplete = false;
 
-const cells = Array.from(document.querySelectorAll(".grid__cell"));
+const sceneData = [
+  { stage: "Decay Stage", scene: 1 },
+  { stage: "Decay Stage", scene: 2 },
+  { stage: "Fully Developed Stage", scene: 3 },
+  { stage: "Fully Developed Stage", scene: 4 },
+  { stage: "Fully Developed Stage", scene: 5 },
+  { stage: "Growth Stage", scene: 6 },
+  { stage: "Growth Stage", scene: 7 },
+  { stage: "Growth Stage", scene: 8 },
+  { stage: "Growth Stage", scene: 9 },
+  { stage: "Growth Stage", scene: 10 },
+  { stage: "Incipient Stage", scene: 11 },
+  { stage: "Incipient Stage", scene: 12 },
+  { stage: "Incipient Stage", scene: 13 },
+  { stage: "Incipient Stage", scene: 14 },
+  { stage: "Incipient Stage", scene: 15 },
+];
+
+let cells = [];
 const labels = Array.from(document.querySelectorAll(".label"));
+
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+const populateGrid = () => {
+  gridContainer.innerHTML = "";
+  const selectedScenes = shuffleArray(sceneData).slice(0, GRID_SIZE * GRID_SIZE);
+  
+  selectedScenes.forEach((sceneInfo) => {
+    const article = document.createElement("article");
+    article.className = "grid__cell";
+    article.dataset.stage = sceneInfo.stage;
+    article.dataset.scene = sceneInfo.scene;
+    article.dataset.answered = "false";
+    article.dataset.active = "false";
+    
+    const imageDiv = document.createElement("div");
+    imageDiv.className = `grid__image scene-${sceneInfo.scene}`;
+    
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "grid__status";
+    statusDiv.setAttribute("aria-live", "polite");
+    
+    article.appendChild(imageDiv);
+    article.appendChild(statusDiv);
+    gridContainer.appendChild(article);
+  });
+  
+  cells = Array.from(document.querySelectorAll(".grid__cell"));
+  attachCellEventListeners();
+};
+
+const attachCellEventListeners = () => {
+  cells.forEach((cell) => {
+    cell.addEventListener("dragover", (event) => {
+      if (cell.dataset.answered === "true" || isPaused || isComplete) {
+        return;
+      }
+      event.preventDefault();
+      cell.dataset.active = "true";
+    });
+
+    cell.addEventListener("dragleave", () => {
+      cell.dataset.active = "false";
+    });
+
+    cell.addEventListener("drop", (event) => {
+      cell.dataset.active = "false";
+      handleDrop(event, cell);
+    });
+  });
+};
 
 const formatTime = (seconds) => {
   const minutes = Math.floor(seconds / 60);
@@ -141,23 +219,5 @@ labels.forEach((label) => {
   });
 });
 
-cells.forEach((cell) => {
-  cell.addEventListener("dragover", (event) => {
-    if (cell.dataset.answered === "true" || isPaused || isComplete) {
-      return;
-    }
-    event.preventDefault();
-    cell.dataset.active = "true";
-  });
-
-  cell.addEventListener("dragleave", () => {
-    cell.dataset.active = "false";
-  });
-
-  cell.addEventListener("drop", (event) => {
-    cell.dataset.active = "false";
-    handleDrop(event, cell);
-  });
-});
-
+populateGrid();
 startTimer();
