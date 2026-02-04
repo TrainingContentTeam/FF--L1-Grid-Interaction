@@ -348,6 +348,10 @@ body {
   font-weight: 600;
 }
 
+.lightbox__caption:empty {
+  display: none;
+}
+
 .lightbox__close {
   position: absolute;
   top: 12px;

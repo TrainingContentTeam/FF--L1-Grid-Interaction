@@ -145,8 +145,9 @@ const openLightbox = (cell) => {
   }
   lastFocusedElement = document.activeElement;
   lightboxImage.src = imageSource;
-  lightboxImage.alt = `${cell.dataset.stage} fire scene`;
-  lightboxCaption.textContent = cell.dataset.stage;
+  const isAnswered = cell.dataset.answered === "true";
+  lightboxImage.alt = isAnswered ? `Fire scene. Correct answer: ${cell.dataset.stage}.` : "Fire scene.";
+  lightboxCaption.textContent = isAnswered ? `Correct answer: ${cell.dataset.stage}` : "";
   lightbox.classList.add("is-open");
   lightbox.setAttribute("aria-hidden", "false");
   document.body.classList.add("is-lightbox-open");
@@ -165,6 +166,9 @@ const closeLightbox = () => {
   document.body.classList.remove("is-lightbox-open");
   if (lightboxImage) {
     lightboxImage.src = "";
+  }
+  if (lightboxCaption) {
+    lightboxCaption.textContent = "";
   }
   if (lastFocusedElement) {
     lastFocusedElement.focus();
@@ -373,6 +377,11 @@ const startTimer = () => {
     if (remainingSeconds <= 0) {
       remainingSeconds = 0;
       updateTimerDisplay();
+      try {
+        window.parent.postMessage({ type: "complete" }, "*");
+      } catch (error) {
+        // Ignore postMessage failures (e.g., sandboxed/blocked parent).
+      }
       endInteraction(`Time is up. Final score: ${points} points.`);
     }
   }, 1000);
