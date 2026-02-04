@@ -265,6 +265,80 @@ body {
   filter: blur(10px);
 }
 
+.lightbox {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+.lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.lightbox__content {
+  position: relative;
+  z-index: 1;
+  width: min(90vw, 900px);
+  max-height: 85vh;
+  background: #0f172a;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.45);
+}
+
+.lightbox__image {
+  width: 100%;
+  height: auto;
+  max-height: 65vh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #111827;
+}
+
+.lightbox__caption {
+  margin: 0;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.lightbox__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: rgba(15, 23, 42, 0.6);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.lightbox__close:hover {
+  background: rgba(37, 99, 235, 0.85);
+}
+
+body.is-lightbox-open {
+  overflow: hidden;
+}
+
 @keyframes slideOutAndShrink {
   0% {
     opacity: 1;

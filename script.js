@@ -7,6 +7,10 @@ const pauseButton = document.getElementById("pauseButton");
 const gridContainer = document.getElementById("grid");
 const pauseOverlay = document.getElementById("pauseOverlay");
 const completionMessage = document.getElementById("completionMessage");
+const lightbox = document.getElementById("lightbox");
+const lightboxImage = document.getElementById("lightboxImage");
+const lightboxCaption = document.getElementById("lightboxCaption");
+const lightboxCloseButtons = Array.from(document.querySelectorAll("[data-lightbox-close]"));
 
 let remainingSeconds = TIME_LIMIT_SECONDS;
 let timerId = null;
@@ -39,8 +43,29 @@ let usedScenes = [];
 let completionQueue = [];
 let points = 0;
 let isReplacingCards = false;
+let lastFocusedElement = null;
 
 const pointsDisplay = document.getElementById("pointsDisplay");
+
+const sceneImages = {
+  1: "images/grid _0000_Decay 2.jpg",
+  2: "images/grid _0001_Decay 1.jpg",
+  3: "images/grid _0002_Full 3.jpg",
+  4: "images/grid _0003_Full 2.jpg",
+  5: "images/grid _0004_Full 1.jpg",
+  6: "images/grid _0005_Growth 5.jpg",
+  7: "images/grid _0006_Growth 4.jpg",
+  8: "images/grid _0007_Growth 3.jpg",
+  9: "images/grid _0008_Growth 2.jpg",
+  10: "images/grid _0009_Growth 1.jpg",
+  11: "images/grid _0010_Incipient 5.jpg",
+  12: "images/grid _0011_Incipient 4.jpg",
+  13: "images/grid _0012_Incipient 3.jpg",
+  14: "images/grid _0013_Incipient 2.jpg",
+  15: "images/grid _0014_Incipient 1.jpg",
+};
+
+const getSceneImage = (sceneNumber) => sceneImages[sceneNumber] || "";
 
 const shuffleArray = (array) => {
   const shuffled = [...array];
@@ -63,6 +88,7 @@ const populateGrid = () => {
     article.dataset.answered = "false";
     article.dataset.active = "false";
     article.dataset.index = index;
+    article.dataset.image = getSceneImage(sceneInfo.scene);
     
     const imageDiv = document.createElement("div");
     imageDiv.className = `grid__image scene-${sceneInfo.scene}`;
@@ -106,6 +132,43 @@ const attachCellEventListeners = () => {
       handleDrop(event, cell);
     });
   });
+};
+
+const openLightbox = (cell) => {
+  if (!cell || !lightbox || !lightboxImage || !lightboxCaption) {
+    return;
+  }
+  const imageSource = cell.dataset.image;
+  if (!imageSource) {
+    return;
+  }
+  lastFocusedElement = document.activeElement;
+  lightboxImage.src = imageSource;
+  lightboxImage.alt = `${cell.dataset.stage} fire scene`;
+  lightboxCaption.textContent = cell.dataset.stage;
+  lightbox.classList.add("is-open");
+  lightbox.setAttribute("aria-hidden", "false");
+  document.body.classList.add("is-lightbox-open");
+  const closeButton = lightbox.querySelector(".lightbox__close");
+  if (closeButton) {
+    closeButton.focus();
+  }
+};
+
+const closeLightbox = () => {
+  if (!lightbox) {
+    return;
+  }
+  lightbox.classList.remove("is-open");
+  lightbox.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("is-lightbox-open");
+  if (lightboxImage) {
+    lightboxImage.src = "";
+  }
+  if (lastFocusedElement) {
+    lastFocusedElement.focus();
+    lastFocusedElement = null;
+  }
 };
 
 const formatTime = (seconds) => {
@@ -186,6 +249,7 @@ const replaceCellsSequentially = async () => {
     cellToReplace.dataset.stage = newScene.stage;
     cellToReplace.dataset.scene = newScene.scene;
     cellToReplace.dataset.answered = "false";
+    cellToReplace.dataset.image = getSceneImage(newScene.scene);
     cellToReplace.classList.remove("is-exiting");
     cellToReplace.classList.add("is-entering");
 
@@ -305,6 +369,26 @@ labels.forEach((label) => {
     }
     event.dataTransfer.setData("text/plain", label.dataset.stage);
   });
+});
+
+gridContainer.addEventListener("click", (event) => {
+  const cell = event.target.closest(".grid__cell");
+  if (!cell || !gridContainer.contains(cell)) {
+    return;
+  }
+  openLightbox(cell);
+});
+
+lightboxCloseButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    closeLightbox();
+  });
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && lightbox?.classList.contains("is-open")) {
+    closeLightbox();
+  }
 });
 
 populateGrid();

@@ -62,6 +62,24 @@
       </footer>
     </main>
 
+    <div
+      class="lightbox"
+      id="lightbox"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Expanded fire scene"
+    >
+      <div class="lightbox__backdrop" data-lightbox-close></div>
+      <div class="lightbox__content" role="document">
+        <button class="lightbox__close" type="button" data-lightbox-close aria-label="Close image">
+          ×
+        </button>
+        <img class="lightbox__image" id="lightboxImage" alt="" />
+        <p class="lightbox__caption" id="lightboxCaption"></p>
+      </div>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>
