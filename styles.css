@@ -216,7 +216,6 @@ body {
 .grid__overlay {
   position: absolute;
   inset: -10px;
-  background: rgba(15, 23, 42, 0.7);
   color: #fff;
   display: flex;
   align-items: center;
