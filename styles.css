@@ -242,10 +242,8 @@ body {
   filter: none;
 }
 
-.grid.is-paused .grid__cell:not(.is-locked) {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background: rgba(15, 23, 42, 0.4) !important;
+.grid.is-paused .grid__cell:not(.is-locked) .grid__image {
+  filter: blur(10px);
 }
 
 @keyframes slideOutAndShrink {
