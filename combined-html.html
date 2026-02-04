@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fire Development Stages: Grid Interaction</title>
+    <style>
+:root {
+  color-scheme: light;
+  font-family: "Avenir Next", "Avenir", "Trebuchet MS", "Segoe UI", sans-serif;
+  background-color: #eef0f6;
+  color: #111827;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #fef3c7 0%, #f8fafc 45%, #e2e8f0 100%);
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.app__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.app__header h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+}
+
+.app__header p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #475569;
+  max-width: 70ch;
+}
+
+.hud {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hud__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hud__stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hud__actions {
+  display: flex;
+  align-items: center;
+}
+
+.hud__stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  color: #0f172a;
+  line-height: 1;
+}
+
+.timer__label,
+.points__label {
+  display: inline;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.timer__value,
+.points__value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.pause-button {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 10px 16px rgba(15, 23, 42, 0.14);
+  transition: box-shadow 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.pause-button:hover {
+  background: #111f3d;
+  box-shadow: 0 12px 18px rgba(15, 23, 42, 0.16);
+}
+
+.pause-button:active {
+  box-shadow: 0 8px 14px rgba(15, 23, 42, 0.12);
+}
+
+.pause-button:focus-visible {
+  outline: 3px solid rgba(56, 189, 248, 0.55);
+  outline-offset: 2px;
+}
+
+.pause-button.is-paused {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: none;
+}
+
+.hud__labels {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hud__labels-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.labels__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.label {
+  padding: 8px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.35);
+  border-radius: 999px;
+  background: #fff;
+  font-weight: 650;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.label:hover {
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.55);
+}
+
+.label:active {
+  cursor: grabbing;
+}
+
+.label:focus-visible {
+  outline: 3px solid rgba(56, 189, 248, 0.55);
+  outline-offset: 2px;
+}
+
+.grid {
+  position: relative;
+}
+
+.grid__inner {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.grid__cell {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #111827;
+  min-height: 200px;
+  border: 2px solid rgba(15, 23, 42, 0.12);
+  transition: border 0.2s ease, transform 0.2s ease;
+}
+
+.grid__cell[data-active="true"] {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+}
+
+.grid__cell[data-answered="true"] {
+  filter: grayscale(0.1);
+}
+
+.grid__image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.grid__status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  font-weight: 600;
+  padding: 12px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.grid__status.is-visible {
+  opacity: 1;
+}
+
+.grid__status span {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.grid__cell.is-locked .grid__status {
+  opacity: 1;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.grid__overlay {
+  position: absolute;
+  inset: -10px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 2rem;
+  font-weight: 700;
+  border-radius: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  background: rgba(15, 23, 42, 0.65);
+  text-align: center;
+  padding: 16px;
+}
+
+.grid.is-paused .grid__overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.grid__overlay span {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.grid.is-paused .grid__inner {
+  pointer-events: none;
+}
+
+.grid__cell.is-locked {
+  filter: none;
+}
+
+.grid.is-paused .grid__cell:not(.is-locked) .grid__image {
+  filter: blur(10px);
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+.lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.lightbox__content {
+  position: relative;
+  z-index: 1;
+  width: min(90vw, 900px);
+  max-height: 85vh;
+  background: #0f172a;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.45);
+}
+
+.lightbox__image {
+  width: 100%;
+  height: auto;
+  max-height: 65vh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #111827;
+}
+
+.lightbox__caption {
+  margin: 0;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.lightbox__caption:empty {
+  display: none;
+}
+
+.lightbox__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: rgba(15, 23, 42, 0.6);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.lightbox__close:hover {
+  background: rgba(37, 99, 235, 0.85);
+}
+
+body.is-lightbox-open {
+  overflow: hidden;
+}
+
+@keyframes slideOutAndShrink {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes slideInAndGrow {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.grid__cell.is-exiting {
+  animation: slideOutAndShrink 0.4s ease-out forwards;
+}
+
+.grid__cell.is-entering {
+  animation: slideInAndGrow 0.4s ease-out forwards;
+}
+
+.app__footer {
+  font-weight: 600;
+  color: #0f172a;
+  min-height: 28px;
+}
+
+.scene-1 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(148, 163, 184, 0.65)),
+    url("images/grid _0000_Decay 2.jpg");
+}
+
+.scene-2 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(148, 163, 184, 0.65)),
+    url("images/grid _0001_Decay 1.jpg");
+}
+
+.scene-3 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(234, 179, 8, 0.55)),
+    url("images/grid _0002_Full 3.jpg");
+}
+
+.scene-4 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(234, 179, 8, 0.55)),
+    url("images/grid _0003_Full 2.jpg");
+}
+
+.scene-5 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(234, 179, 8, 0.55)),
+    url("images/grid _0004_Full 1.jpg");
+}
+
+.scene-6 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(251, 146, 60, 0.55)),
+    url("images/grid _0005_Growth 5.jpg");
+}
+
+.scene-7 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(251, 146, 60, 0.55)),
+    url("images/grid _0006_Growth 4.jpg");
+}
+
+.scene-8 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(251, 146, 60, 0.55)),
+    url("images/grid _0007_Growth 3.jpg");
+}
+
+.scene-9 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(251, 146, 60, 0.55)),
+    url("images/grid _0008_Growth 2.jpg");
+}
+
+.scene-10 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(251, 146, 60, 0.55)),
+    url("images/grid _0009_Growth 1.jpg");
+}
+
+.scene-11 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(253, 224, 71, 0.55)),
+    url("images/grid _0010_Incipient 5.jpg");
+}
+
+.scene-12 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(253, 224, 71, 0.55)),
+    url("images/grid _0011_Incipient 4.jpg");
+}
+
+.scene-13 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(253, 224, 71, 0.55)),
+    url("images/grid _0012_Incipient 3.jpg");
+}
+
+.scene-14 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(253, 224, 71, 0.55)),
+    url("images/grid _0013_Incipient 2.jpg");
+}
+
+.scene-15 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(253, 224, 71, 0.55)),
+    url("images/grid _0014_Incipient 1.jpg");
+}
+
+.scene-16 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(253, 224, 71, 0.55)),
+    url("images/grid_0015_Incipient 6.jpg");
+}
+
+.scene-17 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(234, 179, 8, 0.55)),
+    url("images/grid_0016_Full 5.jpg");
+}
+
+.scene-18 {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.1), rgba(234, 179, 8, 0.55)),
+    url("images/grid_0017_Full 4.jpg");
+}
+
+@media (max-width: 900px) {
+  .grid__inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .grid__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .app__header {
+    flex-direction: column;
+  }
+
+  .hud__bar {
+    align-items: stretch;
+  }
+
+  .hud__actions {
+    width: 100%;
+  }
+
+  .pause-button {
+    width: 100%;
+  }
+}
+</style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <div>
+          <h1>Fire Development Stage Assessment</h1>
+          <p>
+            Drag the correct fire stage label onto each fire scene image. The timer starts when
+            you begin.
+          </p>
+        </div>
+      </header>
+
+      <section class="hud" aria-label="Stage labels and controls">
+        <div class="hud__bar" aria-label="Timer, points, and controls">
+          <div class="hud__stats" aria-label="Status">
+            <div class="hud__stat timer" aria-live="polite">
+              <span class="timer__label">Time</span>
+            <span class="timer__value" id="timerDisplay">00:45</span>
+            </div>
+            <div class="hud__stat points" aria-live="polite">
+              <span class="points__label">Points</span>
+              <span class="points__value" id="pointsDisplay">0</span>
+            </div>
+          </div>
+          <div class="hud__actions" aria-label="Controls">
+            <button class="pause-button" id="pauseButton" type="button">Begin</button>
+          </div>
+        </div>
+
+        <div class="hud__labels" aria-label="Fire stage labels">
+          <span class="hud__labels-title">Stage labels</span>
+          <div class="labels__list" id="labelBank">
+            <button class="label" draggable="true" data-stage="Incipient Stage" type="button">
+              Incipient Stage
+            </button>
+            <button class="label" draggable="true" data-stage="Growth Stage" type="button">
+              Growth Stage
+            </button>
+            <button class="label" draggable="true" data-stage="Fully Developed Stage" type="button">
+              Fully Developed Stage
+            </button>
+            <button class="label" draggable="true" data-stage="Decay Stage" type="button">
+              Decay Stage
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid is-paused" aria-label="Fire scene grid">
+        <div class="grid__overlay" id="pauseOverlay" aria-hidden="false">
+          <p>Ready to begin</p>
+          <span>Click anywhere on the grid to start.</span>
+        </div>
+        <div class="grid__inner" id="grid"></div>
+      </section>
+
+      <footer class="app__footer">
+        <p id="completionMessage" aria-live="polite"></p>
+      </footer>
+    </main>
+
+    <div
+      class="lightbox"
+      id="lightbox"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Expanded fire scene"
+    >
+      <div class="lightbox__backdrop" data-lightbox-close></div>
+      <div class="lightbox__content" role="document">
+        <button class="lightbox__close" type="button" data-lightbox-close aria-label="Close image">
+          ×
+        </button>
+        <img class="lightbox__image" id="lightboxImage" alt="" />
+        <p class="lightbox__caption" id="lightboxCaption"></p>
+      </div>
+    </div>
+
+    <script>
+const TIME_LIMIT_SECONDS = 45;
+const GRID_SIZE = 3; // 3x3 grid
+const TOTAL_SCENES = 18;
+
+const timerDisplay = document.getElementById("timerDisplay");
+const pauseButton = document.getElementById("pauseButton");
+const gridContainer = document.getElementById("grid");
+const pauseOverlay = document.getElementById("pauseOverlay");
+const gridSection = document.querySelector(".grid");
+const completionMessage = document.getElementById("completionMessage");
+const lightbox = document.getElementById("lightbox");
+const lightboxImage = document.getElementById("lightboxImage");
+const lightboxCaption = document.getElementById("lightboxCaption");
+const lightboxCloseButtons = Array.from(document.querySelectorAll("[data-lightbox-close]"));
+
+let remainingSeconds = TIME_LIMIT_SECONDS;
+let timerId = null;
+let isPaused = true;
+let isStarted = false;
+let isComplete = false;
+
+const sceneData = [
+  { stage: "Decay Stage", scene: 1 },
+  { stage: "Decay Stage", scene: 2 },
+  { stage: "Fully Developed Stage", scene: 3 },
+  { stage: "Fully Developed Stage", scene: 4 },
+  { stage: "Fully Developed Stage", scene: 5 },
+  { stage: "Fully Developed Stage", scene: 17 },
+  { stage: "Fully Developed Stage", scene: 18 },
+  { stage: "Growth Stage", scene: 6 },
+  { stage: "Growth Stage", scene: 7 },
+  { stage: "Growth Stage", scene: 8 },
+  { stage: "Growth Stage", scene: 9 },
+  { stage: "Growth Stage", scene: 10 },
+  { stage: "Incipient Stage", scene: 11 },
+  { stage: "Incipient Stage", scene: 12 },
+  { stage: "Incipient Stage", scene: 13 },
+  { stage: "Incipient Stage", scene: 14 },
+  { stage: "Incipient Stage", scene: 15 },
+  { stage: "Incipient Stage", scene: 16 },
+];
+
+let cells = [];
+const labels = Array.from(document.querySelectorAll(".label"));
+let availableScenes = [...sceneData];
+let usedScenes = [];
+let completionQueue = [];
+let points = 0;
+let isReplacingCards = false;
+let lastFocusedElement = null;
+
+const pointsDisplay = document.getElementById("pointsDisplay");
+
+const sceneImages = {
+  1: "images/grid _0000_Decay 2.jpg",
+  2: "images/grid _0001_Decay 1.jpg",
+  3: "images/grid _0002_Full 3.jpg",
+  4: "images/grid _0003_Full 2.jpg",
+  5: "images/grid _0004_Full 1.jpg",
+  6: "images/grid _0005_Growth 5.jpg",
+  7: "images/grid _0006_Growth 4.jpg",
+  8: "images/grid _0007_Growth 3.jpg",
+  9: "images/grid _0008_Growth 2.jpg",
+  10: "images/grid _0009_Growth 1.jpg",
+  11: "images/grid _0010_Incipient 5.jpg",
+  12: "images/grid _0011_Incipient 4.jpg",
+  13: "images/grid _0012_Incipient 3.jpg",
+  14: "images/grid _0013_Incipient 2.jpg",
+  15: "images/grid _0014_Incipient 1.jpg",
+  16: "images/grid_0015_Incipient 6.jpg",
+  17: "images/grid_0016_Full 5.jpg",
+  18: "images/grid_0017_Full 4.jpg",
+};
+
+const getSceneImage = (sceneNumber) => sceneImages[sceneNumber] || "";
+
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+const populateGrid = () => {
+  gridContainer.innerHTML = "";
+  const selectedScenes = shuffleArray(availableScenes).slice(0, GRID_SIZE * GRID_SIZE);
+  
+  selectedScenes.forEach((sceneInfo, index) => {
+    const article = document.createElement("article");
+    article.className = "grid__cell";
+    article.dataset.stage = sceneInfo.stage;
+    article.dataset.scene = sceneInfo.scene;
+    article.dataset.answered = "false";
+    article.dataset.active = "false";
+    article.dataset.index = index;
+    article.dataset.image = getSceneImage(sceneInfo.scene);
+    
+    const imageDiv = document.createElement("div");
+    imageDiv.className = `grid__image scene-${sceneInfo.scene}`;
+    
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "grid__status";
+    statusDiv.setAttribute("aria-live", "polite");
+    
+    article.appendChild(imageDiv);
+    article.appendChild(statusDiv);
+    gridContainer.appendChild(article);
+    
+    usedScenes.push(sceneInfo.scene);
+  });
+  
+  // Remove used scenes from available
+  availableScenes = availableScenes.filter(
+    (scene) => !usedScenes.includes(scene.scene)
+  );
+  
+  cells = Array.from(document.querySelectorAll(".grid__cell"));
+  attachCellEventListeners();
+};
+
+const attachCellEventListeners = () => {
+  cells.forEach((cell) => {
+    cell.addEventListener("dragover", (event) => {
+      if (cell.dataset.answered === "true" || isPaused || isComplete || !isStarted) {
+        return;
+      }
+      event.preventDefault();
+      cell.dataset.active = "true";
+    });
+
+    cell.addEventListener("dragleave", () => {
+      cell.dataset.active = "false";
+    });
+
+    cell.addEventListener("drop", (event) => {
+      cell.dataset.active = "false";
+      handleDrop(event, cell);
+    });
+  });
+};
+
+const openLightbox = (cell) => {
+  if (!cell || !lightbox || !lightboxImage || !lightboxCaption) {
+    return;
+  }
+  const imageSource = cell.dataset.image;
+  if (!imageSource) {
+    return;
+  }
+  lastFocusedElement = document.activeElement;
+  lightboxImage.src = imageSource;
+  const isAnswered = cell.dataset.answered === "true";
+  lightboxImage.alt = isAnswered ? `Fire scene. Correct answer: ${cell.dataset.stage}.` : "Fire scene.";
+  lightboxCaption.textContent = isAnswered ? `Correct answer: ${cell.dataset.stage}` : "";
+  lightbox.classList.add("is-open");
+  lightbox.setAttribute("aria-hidden", "false");
+  document.body.classList.add("is-lightbox-open");
+  const closeButton = lightbox.querySelector(".lightbox__close");
+  if (closeButton) {
+    closeButton.focus();
+  }
+};
+
+const closeLightbox = () => {
+  if (!lightbox) {
+    return;
+  }
+  lightbox.classList.remove("is-open");
+  lightbox.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("is-lightbox-open");
+  if (lightboxImage) {
+    lightboxImage.src = "";
+  }
+  if (lightboxCaption) {
+    lightboxCaption.textContent = "";
+  }
+  if (lastFocusedElement) {
+    lastFocusedElement.focus();
+    lastFocusedElement = null;
+  }
+};
+
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
+};
+
+const updateTimerDisplay = () => {
+  timerDisplay.textContent = formatTime(remainingSeconds);
+};
+
+const updatePointsDisplay = () => {
+  if (pointsDisplay) {
+    pointsDisplay.textContent = points;
+  }
+};
+
+const updateOverlayMessage = (message, subMessage) => {
+  if (!pauseOverlay) {
+    return;
+  }
+  const title = pauseOverlay.querySelector("p");
+  const subtitle = pauseOverlay.querySelector("span");
+  if (title) {
+    title.textContent = message;
+  }
+  if (subtitle) {
+    subtitle.textContent = subMessage || "";
+  }
+};
+
+const setPausedState = (paused) => {
+  isPaused = paused;
+  pauseButton.classList.toggle("is-paused", isPaused && isStarted);
+  if (isStarted) {
+    pauseButton.textContent = isPaused ? "Resume" : "Pause";
+  }
+  pauseOverlay.setAttribute("aria-hidden", String(!isPaused));
+  gridSection?.classList.toggle("is-paused", isPaused);
+  if (isPaused && isStarted) {
+    updateOverlayMessage("Paused", "Click the grid to resume.");
+  }
+};
+
+const startInteraction = () => {
+  if (isComplete || isStarted) {
+    return;
+  }
+  isStarted = true;
+  pauseButton.textContent = "Pause";
+  setPausedState(false);
+  startTimer();
+};
+
+const endInteraction = (message) => {
+  if (isComplete) {
+    return;
+  }
+  isComplete = true;
+  clearInterval(timerId);
+  completionMessage.textContent = message;
+  labels.forEach((label) => {
+    label.setAttribute("draggable", "false");
+    label.disabled = true;
+  });
+  cells.forEach((cell) => {
+    if (cell.dataset.answered !== "true") {
+      revealCorrectStage(cell, true);
+    }
+    cell.dataset.answered = "true";
+  });
+};
+
+const revealCorrectStage = (cell, timedOut = false) => {
+  const correctStage = cell.dataset.stage;
+  const status = cell.querySelector(".grid__status");
+  status.innerHTML = "";
+
+  const message = document.createElement("div");
+  message.textContent = correctStage;
+  status.appendChild(message);
+
+  if (timedOut) {
+    const note = document.createElement("span");
+    note.textContent = "Time expired";
+    status.appendChild(note);
+  }
+
+  status.classList.add("is-visible");
+  cell.classList.add("is-locked");
+};
+
+const replaceCellsSequentially = async () => {
+  // Only replace if time remains and there are available scenes
+  if (remainingSeconds <= 0 || availableScenes.length === 0 || completionQueue.length === 0) {
+    isReplacingCards = false;
+    return;
+  }
+
+  isReplacingCards = true;
+
+  // Replace each completed cell one at a time
+  while (completionQueue.length > 0 && availableScenes.length > 0 && remainingSeconds > 0) {
+    const cellToReplace = completionQueue.shift();
+    const newScene = availableScenes.shift();
+
+    // Add exit animation
+    cellToReplace.classList.add("is-exiting");
+
+    // Wait for exit animation
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    // Update the cell
+    cellToReplace.dataset.stage = newScene.stage;
+    cellToReplace.dataset.scene = newScene.scene;
+    cellToReplace.dataset.answered = "false";
+    cellToReplace.dataset.image = getSceneImage(newScene.scene);
+    cellToReplace.classList.remove("is-exiting");
+    cellToReplace.classList.add("is-entering");
+
+    // Update image
+    const imageDiv = cellToReplace.querySelector(".grid__image");
+    imageDiv.className = `grid__image scene-${newScene.scene}`;
+
+    // Clear status
+    const statusDiv = cellToReplace.querySelector(".grid__status");
+    statusDiv.innerHTML = "";
+    statusDiv.classList.remove("is-visible");
+    cellToReplace.classList.remove("is-locked");
+
+    usedScenes.push(newScene.scene);
+
+    // Wait for enter animation
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    // Remove animation class
+    cellToReplace.classList.remove("is-entering");
+  }
+
+  isReplacingCards = false;
+};
+
+const handleDrop = (event, cell) => {
+  event.preventDefault();
+  if (isComplete || isPaused || !isStarted) {
+    return;
+  }
+
+  if (cell.dataset.answered === "true") {
+    return;
+  }
+
+  const droppedStage = event.dataTransfer.getData("text/plain");
+  const correctStage = cell.dataset.stage;
+  const status = cell.querySelector(".grid__status");
+  status.innerHTML = "";
+
+  const stageLabel = document.createElement("div");
+  stageLabel.textContent = correctStage;
+  status.appendChild(stageLabel);
+
+  let isCorrect = false;
+  if (droppedStage === correctStage) {
+    status.classList.add("is-visible");
+    cell.classList.add("is-locked");
+    cell.dataset.answered = "true";
+    isCorrect = true;
+    points += 10;
+    updatePointsDisplay();
+  } else {
+    const note = document.createElement("span");
+    note.textContent = `Incorrect. Correct stage: ${correctStage}.`;
+    status.appendChild(note);
+    status.classList.add("is-visible");
+    cell.classList.add("is-locked");
+    cell.dataset.answered = "true";
+  }
+
+  // Add cell to completion queue
+  completionQueue.push(cell);
+
+  // Check if all 9 cards are completed
+  const answeredCount = cells.filter(
+    (c) => c.dataset.answered === "true"
+  ).length;
+  if (answeredCount === GRID_SIZE * GRID_SIZE && !isReplacingCards) {
+    replaceCellsSequentially();
+  }
+};
+
+const startTimer = () => {
+  console.log("[TIMER] startTimer called", {
+    remainingSeconds,
+    isPaused,
+    isComplete,
+    points
+  });
+
+  updateTimerDisplay();
+  updatePointsDisplay();
+
+  timerId = setInterval(() => {
+    if (isPaused || isComplete) {
+      console.log("[TIMER] Tick skipped", {
+        isPaused,
+        isComplete
+      });
+      return;
+    }
+
+    remainingSeconds -= 1;
+    console.log("[TIMER] Tick", { remainingSeconds });
+
+    updateTimerDisplay();
+
+    if (remainingSeconds <= 0) {
+      remainingSeconds = 0;
+      updateTimerDisplay();
+
+      console.log("[TIMER] Time expired — completing interaction", {
+        finalPoints: points
+      });
+
+      try {
+        window.parent.postMessage({ type: "complete" }, "*");
+        console.log("[TIMER] postMessage sent to parent");
+      } catch (error) {
+        console.warn("[TIMER] postMessage failed", error);
+      }
+
+      endInteraction(`Time is up. Final score: ${points} points.`);
+    }
+  }, 1000);
+};
+
+
+pauseButton.addEventListener("click", () => {
+  if (isComplete) {
+    return;
+  }
+  
+  if (!isStarted) {
+    startInteraction();
+    return;
+  }
+  
+  // Toggle pause/resume
+  setPausedState(!isPaused);
+});
+
+labels.forEach((label) => {
+  label.addEventListener("dragstart", (event) => {
+    if (isComplete || isPaused || !isStarted) {
+      event.preventDefault();
+      return;
+    }
+    event.dataTransfer.setData("text/plain", label.dataset.stage);
+  });
+});
+
+gridContainer.addEventListener("click", (event) => {
+  if (!isStarted) {
+    startInteraction();
+    return;
+  }
+  if (isPaused) {
+    setPausedState(false);
+    return;
+  }
+  const cell = event.target.closest(".grid__cell");
+  if (!cell || !gridContainer.contains(cell)) {
+    return;
+  }
+  openLightbox(cell);
+});
+
+pauseOverlay.addEventListener("click", () => {
+  if (!isStarted) {
+    startInteraction();
+    return;
+  }
+  if (isPaused) {
+    setPausedState(false);
+  }
+});
+
+lightboxCloseButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    closeLightbox();
+  });
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && lightbox?.classList.contains("is-open")) {
+    closeLightbox();
+  }
+});
+
+updateOverlayMessage("Ready to begin", "Click anywhere on the grid to start.");
+setPausedState(true);
+updateTimerDisplay();
+updatePointsDisplay();
+populateGrid();
+</script>
+  </body>
+</html>
