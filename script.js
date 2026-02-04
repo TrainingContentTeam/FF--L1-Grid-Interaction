@@ -33,6 +33,13 @@ const sceneData = [
 
 let cells = [];
 const labels = Array.from(document.querySelectorAll(".label"));
+let availableScenes = [...sceneData];
+let usedScenes = [];
+let completionQueue = [];
+let points = 0;
+let isReplacingCards = false;
+
+const pointsDisplay = document.getElementById("pointsDisplay");
 
 const shuffleArray = (array) => {
   const shuffled = [...array];
@@ -45,15 +52,16 @@ const shuffleArray = (array) => {
 
 const populateGrid = () => {
   gridContainer.innerHTML = "";
-  const selectedScenes = shuffleArray(sceneData).slice(0, GRID_SIZE * GRID_SIZE);
+  const selectedScenes = shuffleArray(availableScenes).slice(0, GRID_SIZE * GRID_SIZE);
   
-  selectedScenes.forEach((sceneInfo) => {
+  selectedScenes.forEach((sceneInfo, index) => {
     const article = document.createElement("article");
     article.className = "grid__cell";
     article.dataset.stage = sceneInfo.stage;
     article.dataset.scene = sceneInfo.scene;
     article.dataset.answered = "false";
     article.dataset.active = "false";
+    article.dataset.index = index;
     
     const imageDiv = document.createElement("div");
     imageDiv.className = `grid__image scene-${sceneInfo.scene}`;
@@ -65,7 +73,14 @@ const populateGrid = () => {
     article.appendChild(imageDiv);
     article.appendChild(statusDiv);
     gridContainer.appendChild(article);
+    
+    usedScenes.push(sceneInfo.scene);
   });
+  
+  // Remove used scenes from available
+  availableScenes = availableScenes.filter(
+    (scene) => !usedScenes.includes(scene.scene)
+  );
   
   cells = Array.from(document.querySelectorAll(".grid__cell"));
   attachCellEventListeners();
@@ -100,6 +115,12 @@ const formatTime = (seconds) => {
 
 const updateTimerDisplay = () => {
   timerDisplay.textContent = formatTime(remainingSeconds);
+};
+
+const updatePointsDisplay = () => {
+  if (pointsDisplay) {
+    pointsDisplay.textContent = points;
+  }
 };
 
 const endInteraction = (message) => {
@@ -140,6 +161,55 @@ const revealCorrectStage = (cell, timedOut = false) => {
   cell.classList.add("is-locked");
 };
 
+const replaceCellsSequentially = async () => {
+  // Only replace if time remains and there are available scenes
+  if (remainingSeconds <= 0 || availableScenes.length === 0 || completionQueue.length === 0) {
+    isReplacingCards = false;
+    return;
+  }
+
+  isReplacingCards = true;
+
+  // Replace each completed cell one at a time
+  while (completionQueue.length > 0 && availableScenes.length > 0 && remainingSeconds > 0) {
+    const cellToReplace = completionQueue.shift();
+    const newScene = availableScenes.shift();
+
+    // Add exit animation
+    cellToReplace.classList.add("is-exiting");
+
+    // Wait for exit animation
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    // Update the cell
+    cellToReplace.dataset.stage = newScene.stage;
+    cellToReplace.dataset.scene = newScene.scene;
+    cellToReplace.dataset.answered = "false";
+    cellToReplace.classList.remove("is-exiting");
+    cellToReplace.classList.add("is-entering");
+
+    // Update image
+    const imageDiv = cellToReplace.querySelector(".grid__image");
+    imageDiv.className = `grid__image scene-${newScene.scene}`;
+
+    // Clear status
+    const statusDiv = cellToReplace.querySelector(".grid__status");
+    statusDiv.innerHTML = "";
+    statusDiv.classList.remove("is-visible");
+    cellToReplace.classList.remove("is-locked");
+
+    usedScenes.push(newScene.scene);
+
+    // Wait for enter animation
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    // Remove animation class
+    cellToReplace.classList.remove("is-entering");
+  }
+
+  isReplacingCards = false;
+};
+
 const handleDrop = (event, cell) => {
   event.preventDefault();
   if (isComplete || isPaused) {
@@ -159,10 +229,14 @@ const handleDrop = (event, cell) => {
   stageLabel.textContent = correctStage;
   status.appendChild(stageLabel);
 
+  let isCorrect = false;
   if (droppedStage === correctStage) {
     status.classList.add("is-visible");
     cell.classList.add("is-locked");
     cell.dataset.answered = "true";
+    isCorrect = true;
+    points += 10;
+    updatePointsDisplay();
   } else {
     const note = document.createElement("span");
     note.textContent = `Incorrect. Correct stage: ${correctStage}.`;
@@ -172,18 +246,28 @@ const handleDrop = (event, cell) => {
     cell.dataset.answered = "true";
   }
 
-  checkCompletion();
-};
+  // Add cell to completion queue
+  completionQueue.push(cell);
+
+  // Check if all 9 cards are completed
+  const answeredCount = cells.filter(
+    (c) => c.dataset.answered === "true"
+  ).length;
+  if (answeredCount === GRID_SIZE * GRID_SIZE && !isReplacingCards) {
+    replaceCellsSequentially();
+  }
+};};
 
 const checkCompletion = () => {
-  const answeredCount = cells.filter((cell) => cell.dataset.answered === "true").length;
-  if (answeredCount === cells.length) {
+  // Only end if all 15 scenes have been used or time is up
+  if (usedScenes.length === TOTAL_SCENES) {
     endInteraction("All scenes reviewed. Interaction complete.");
   }
 };
 
 const startTimer = () => {
   updateTimerDisplay();
+  updatePointsDisplay();
   timerId = setInterval(() => {
     if (isPaused || isComplete) {
       return;
@@ -193,7 +277,7 @@ const startTimer = () => {
     if (remainingSeconds <= 0) {
       remainingSeconds = 0;
       updateTimerDisplay();
-      endInteraction("Time is up. Correct stages are now shown.");
+      endInteraction(`Time is up. Final score: ${points} points.`);
     }
   }, 1000);
 };
@@ -206,7 +290,7 @@ pauseButton.addEventListener("click", () => {
   pauseButton.classList.toggle("is-paused", isPaused);
   pauseButton.textContent = isPaused ? "Resume" : "Pause";
   pauseOverlay.setAttribute("aria-hidden", String(!isPaused));
-  grid.classList.toggle("is-paused", isPaused);
+  gridContainer.parentElement.classList.toggle("is-paused", isPaused);
 });
 
 labels.forEach((label) => {
