@@ -15,8 +15,29 @@
             Drag the correct fire stage label onto each fire scene image. Work quickly — the
             countdown timer is running.
           </p>
-                  </div>
-        <div class="app__controls">
+        </div>
+      </header>
+
+      <section class="labels-area" aria-label="Stage labels and controls">
+        <div class="labels" aria-label="Fire stage labels">
+          <h2>Stage Labels</h2>
+          <div class="labels__list" id="labelBank">
+            <button class="label" draggable="true" data-stage="Incipient Stage" type="button">
+              Incipient Stage
+            </button>
+            <button class="label" draggable="true" data-stage="Growth Stage" type="button">
+              Growth Stage
+            </button>
+            <button class="label" draggable="true" data-stage="Fully Developed Stage" type="button">
+              Fully Developed Stage
+            </button>
+            <button class="label" draggable="true" data-stage="Decay Stage" type="button">
+              Decay Stage
+            </button>
+          </div>
+        </div>
+
+        <div class="app__controls labels__controls" aria-label="Timer, points, and controls">
           <div class="timer" aria-live="polite">
             <span class="timer__label">Time Remaining</span>
             <span class="timer__value" id="timerDisplay">01:30</span>
@@ -26,24 +47,6 @@
             <span class="points__value" id="pointsDisplay">0</span>
           </div>
           <button class="pause-button" id="pauseButton" type="button">Begin</button>
-        </div>
-      </header>
-
-      <section class="labels" aria-label="Fire stage labels">
-        <h2>Stage Labels</h2>
-        <div class="labels__list" id="labelBank">
-          <button class="label" draggable="true" data-stage="Incipient Stage" type="button">
-            Incipient Stage
-          </button>
-          <button class="label" draggable="true" data-stage="Growth Stage" type="button">
-            Growth Stage
-          </button>
-          <button class="label" draggable="true" data-stage="Fully Developed Stage" type="button">
-            Fully Developed Stage
-          </button>
-          <button class="label" draggable="true" data-stage="Decay Stage" type="button">
-            Decay Stage
-          </button>
         </div>
       </section>
 
