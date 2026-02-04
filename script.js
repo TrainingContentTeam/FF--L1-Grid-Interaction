@@ -1,6 +1,6 @@
-const TIME_LIMIT_SECONDS = 60;
+const TIME_LIMIT_SECONDS = 45;
 const GRID_SIZE = 3; // 3x3 grid
-const TOTAL_SCENES = 15;
+const TOTAL_SCENES = 18;
 
 const timerDisplay = document.getElementById("timerDisplay");
 const pauseButton = document.getElementById("pauseButton");
@@ -25,6 +25,8 @@ const sceneData = [
   { stage: "Fully Developed Stage", scene: 3 },
   { stage: "Fully Developed Stage", scene: 4 },
   { stage: "Fully Developed Stage", scene: 5 },
+  { stage: "Fully Developed Stage", scene: 17 },
+  { stage: "Fully Developed Stage", scene: 18 },
   { stage: "Growth Stage", scene: 6 },
   { stage: "Growth Stage", scene: 7 },
   { stage: "Growth Stage", scene: 8 },
@@ -35,6 +37,7 @@ const sceneData = [
   { stage: "Incipient Stage", scene: 13 },
   { stage: "Incipient Stage", scene: 14 },
   { stage: "Incipient Stage", scene: 15 },
+  { stage: "Incipient Stage", scene: 16 },
 ];
 
 let cells = [];
@@ -64,6 +67,9 @@ const sceneImages = {
   13: "images/grid _0012_Incipient 3.jpg",
   14: "images/grid _0013_Incipient 2.jpg",
   15: "images/grid _0014_Incipient 1.jpg",
+  16: "images/grid_0015_Incipient 6.jpg",
+  17: "images/grid_0016_Full 5.jpg",
+  18: "images/grid_0017_Full 4.jpg",
 };
 
 const getSceneImage = (sceneNumber) => sceneImages[sceneNumber] || "";
