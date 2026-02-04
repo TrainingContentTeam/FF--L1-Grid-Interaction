@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
-  <rect width="640" height="480" fill="#0f172a" />
-  <path d="M60 410 C140 300 280 300 380 410" fill="#4b5563" />
-  <text x="180" y="160" fill="#ffffff" font-size="32" font-family="Arial">Cooling down</text>
-</svg>

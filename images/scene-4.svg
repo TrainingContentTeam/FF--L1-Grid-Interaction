@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
-  <rect width="640" height="480" fill="#0f172a" />
-  <path d="M80 420 C200 260 320 260 440 420" fill="#94a3b8" />
-  <text x="160" y="160" fill="#ffffff" font-size="32" font-family="Arial">Smoke layer</text>
-</svg>

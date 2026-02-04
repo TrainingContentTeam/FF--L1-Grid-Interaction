@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
-  <rect width="640" height="480" fill="#0f172a" />
-  <rect x="120" y="80" width="400" height="320" fill="#b91c1c" />
-  <text x="160" y="260" fill="#ffffff" font-size="28" font-family="Arial">Room on fire</text>
-</svg>

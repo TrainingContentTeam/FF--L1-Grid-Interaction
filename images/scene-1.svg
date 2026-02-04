@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
-  <rect width="640" height="480" fill="#0f172a" />
-  <circle cx="140" cy="340" r="70" fill="#f97316" />
-  <circle cx="240" cy="300" r="50" fill="#facc15" />
-  <text x="300" y="260" fill="#ffffff" font-size="32" font-family="Arial">Smoke wisp</text>
-</svg>

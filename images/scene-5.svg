@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
-  <rect width="640" height="480" fill="#1f2937" />
-  <path d="M160 410 C220 230 360 190 400 80 C420 190 500 240 500 410" fill="#fb923c" />
-  <text x="80" y="80" fill="#ffffff" font-size="28" font-family="Arial">Heat buildup</text>
-</svg>
