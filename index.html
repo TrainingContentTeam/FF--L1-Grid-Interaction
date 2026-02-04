@@ -20,15 +20,19 @@
 
       <section class="hud" aria-label="Stage labels and controls">
         <div class="hud__bar" aria-label="Timer, points, and controls">
-          <div class="timer" aria-live="polite">
-            <span class="timer__label">Time</span>
-            <span class="timer__value" id="timerDisplay">01:30</span>
+          <div class="hud__stats" aria-label="Status">
+            <div class="hud__stat timer" aria-live="polite">
+              <span class="timer__label">Time</span>
+              <span class="timer__value" id="timerDisplay">01:30</span>
+            </div>
+            <div class="hud__stat points" aria-live="polite">
+              <span class="points__label">Points</span>
+              <span class="points__value" id="pointsDisplay">0</span>
+            </div>
           </div>
-          <div class="points" aria-live="polite">
-            <span class="points__label">Points</span>
-            <span class="points__value" id="pointsDisplay">0</span>
+          <div class="hud__actions" aria-label="Controls">
+            <button class="pause-button" id="pauseButton" type="button">Begin</button>
           </div>
-          <button class="pause-button" id="pauseButton" type="button">Begin</button>
         </div>
 
         <div class="hud__labels" aria-label="Fire stage labels">

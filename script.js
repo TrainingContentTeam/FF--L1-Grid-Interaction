@@ -1,4 +1,4 @@
-const TIME_LIMIT_SECONDS = 90;
+const TIME_LIMIT_SECONDS = 60;
 const GRID_SIZE = 3; // 3x3 grid
 const TOTAL_SCENES = 15;
 
@@ -366,26 +366,50 @@ const handleDrop = (event, cell) => {
 };
 
 const startTimer = () => {
+  console.log("[TIMER] startTimer called", {
+    remainingSeconds,
+    isPaused,
+    isComplete,
+    points
+  });
+
   updateTimerDisplay();
   updatePointsDisplay();
+
   timerId = setInterval(() => {
     if (isPaused || isComplete) {
+      console.log("[TIMER] Tick skipped", {
+        isPaused,
+        isComplete
+      });
       return;
     }
+
     remainingSeconds -= 1;
+    console.log("[TIMER] Tick", { remainingSeconds });
+
     updateTimerDisplay();
+
     if (remainingSeconds <= 0) {
       remainingSeconds = 0;
       updateTimerDisplay();
+
+      console.log("[TIMER] Time expired — completing interaction", {
+        finalPoints: points
+      });
+
       try {
         window.parent.postMessage({ type: "complete" }, "*");
+        console.log("[TIMER] postMessage sent to parent");
       } catch (error) {
-        // Ignore postMessage failures (e.g., sandboxed/blocked parent).
+        console.warn("[TIMER] postMessage failed", error);
       }
+
       endInteraction(`Time is up. Final score: ${points} points.`);
     }
   }, 1000);
 };
+
 
 pauseButton.addEventListener("click", () => {
   if (isComplete) {
