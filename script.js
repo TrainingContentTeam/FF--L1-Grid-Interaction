@@ -11,6 +11,7 @@ const completionMessage = document.getElementById("completionMessage");
 let remainingSeconds = TIME_LIMIT_SECONDS;
 let timerId = null;
 let isPaused = false;
+let isStarted = false;
 let isComplete = false;
 
 const sceneData = [
@@ -89,7 +90,7 @@ const populateGrid = () => {
 const attachCellEventListeners = () => {
   cells.forEach((cell) => {
     cell.addEventListener("dragover", (event) => {
-      if (cell.dataset.answered === "true" || isPaused || isComplete) {
+      if (cell.dataset.answered === "true" || isPaused || isComplete || !isStarted) {
         return;
       }
       event.preventDefault();
@@ -212,7 +213,7 @@ const replaceCellsSequentially = async () => {
 
 const handleDrop = (event, cell) => {
   event.preventDefault();
-  if (isComplete || isPaused) {
+  if (isComplete || isPaused || !isStarted) {
     return;
   }
 
@@ -256,13 +257,6 @@ const handleDrop = (event, cell) => {
   if (answeredCount === GRID_SIZE * GRID_SIZE && !isReplacingCards) {
     replaceCellsSequentially();
   }
-};};
-
-const checkCompletion = () => {
-  // Only end if all 15 scenes have been used or time is up
-  if (usedScenes.length === TOTAL_SCENES) {
-    endInteraction("All scenes reviewed. Interaction complete.");
-  }
 };
 
 const startTimer = () => {
@@ -286,6 +280,16 @@ pauseButton.addEventListener("click", () => {
   if (isComplete) {
     return;
   }
+  
+  if (!isStarted) {
+    // Begin the interaction
+    isStarted = true;
+    pauseButton.textContent = "Pause";
+    startTimer();
+    return;
+  }
+  
+  // Toggle pause/resume
   isPaused = !isPaused;
   pauseButton.classList.toggle("is-paused", isPaused);
   pauseButton.textContent = isPaused ? "Resume" : "Pause";
@@ -295,7 +299,7 @@ pauseButton.addEventListener("click", () => {
 
 labels.forEach((label) => {
   label.addEventListener("dragstart", (event) => {
-    if (isComplete || isPaused) {
+    if (isComplete || isPaused || !isStarted) {
       event.preventDefault();
       return;
     }
@@ -304,4 +308,3 @@ labels.forEach((label) => {
 });
 
 populateGrid();
-startTimer();
