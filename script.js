@@ -6,6 +6,7 @@ const timerDisplay = document.getElementById("timerDisplay");
 const pauseButton = document.getElementById("pauseButton");
 const gridContainer = document.getElementById("grid");
 const pauseOverlay = document.getElementById("pauseOverlay");
+const gridSection = document.querySelector(".grid");
 const completionMessage = document.getElementById("completionMessage");
 const lightbox = document.getElementById("lightbox");
 const lightboxImage = document.getElementById("lightboxImage");
@@ -14,7 +15,7 @@ const lightboxCloseButtons = Array.from(document.querySelectorAll("[data-lightbo
 
 let remainingSeconds = TIME_LIMIT_SECONDS;
 let timerId = null;
-let isPaused = false;
+let isPaused = true;
 let isStarted = false;
 let isComplete = false;
 
@@ -187,6 +188,43 @@ const updatePointsDisplay = () => {
   }
 };
 
+const updateOverlayMessage = (message, subMessage) => {
+  if (!pauseOverlay) {
+    return;
+  }
+  const title = pauseOverlay.querySelector("p");
+  const subtitle = pauseOverlay.querySelector("span");
+  if (title) {
+    title.textContent = message;
+  }
+  if (subtitle) {
+    subtitle.textContent = subMessage || "";
+  }
+};
+
+const setPausedState = (paused) => {
+  isPaused = paused;
+  pauseButton.classList.toggle("is-paused", isPaused && isStarted);
+  if (isStarted) {
+    pauseButton.textContent = isPaused ? "Resume" : "Pause";
+  }
+  pauseOverlay.setAttribute("aria-hidden", String(!isPaused));
+  gridSection?.classList.toggle("is-paused", isPaused);
+  if (isPaused && isStarted) {
+    updateOverlayMessage("Paused", "Click the grid to resume.");
+  }
+};
+
+const startInteraction = () => {
+  if (isComplete || isStarted) {
+    return;
+  }
+  isStarted = true;
+  pauseButton.textContent = "Pause";
+  setPausedState(false);
+  startTimer();
+};
+
 const endInteraction = (message) => {
   if (isComplete) {
     return;
@@ -346,19 +384,12 @@ pauseButton.addEventListener("click", () => {
   }
   
   if (!isStarted) {
-    // Begin the interaction
-    isStarted = true;
-    pauseButton.textContent = "Pause";
-    startTimer();
+    startInteraction();
     return;
   }
   
   // Toggle pause/resume
-  isPaused = !isPaused;
-  pauseButton.classList.toggle("is-paused", isPaused);
-  pauseButton.textContent = isPaused ? "Resume" : "Pause";
-  pauseOverlay.setAttribute("aria-hidden", String(!isPaused));
-  gridContainer.parentElement.classList.toggle("is-paused", isPaused);
+  setPausedState(!isPaused);
 });
 
 labels.forEach((label) => {
@@ -372,11 +403,29 @@ labels.forEach((label) => {
 });
 
 gridContainer.addEventListener("click", (event) => {
+  if (!isStarted) {
+    startInteraction();
+    return;
+  }
+  if (isPaused) {
+    setPausedState(false);
+    return;
+  }
   const cell = event.target.closest(".grid__cell");
   if (!cell || !gridContainer.contains(cell)) {
     return;
   }
   openLightbox(cell);
+});
+
+pauseOverlay.addEventListener("click", () => {
+  if (!isStarted) {
+    startInteraction();
+    return;
+  }
+  if (isPaused) {
+    setPausedState(false);
+  }
 });
 
 lightboxCloseButtons.forEach((button) => {
@@ -391,4 +440,6 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+updateOverlayMessage("Ready to begin", "Click anywhere on the grid to start.");
+setPausedState(true);
 populateGrid();

@@ -12,15 +12,27 @@
         <div>
           <h1>Fire Development Stage Assessment</h1>
           <p>
-            Drag the correct fire stage label onto each fire scene image. Work quickly — the
-            countdown timer is running.
+            Drag the correct fire stage label onto each fire scene image. The timer starts when
+            you begin.
           </p>
         </div>
       </header>
 
-      <section class="labels-area" aria-label="Stage labels and controls">
-        <div class="labels" aria-label="Fire stage labels">
-          <h2>Stage Labels</h2>
+      <section class="hud" aria-label="Stage labels and controls">
+        <div class="hud__bar" aria-label="Timer, points, and controls">
+          <div class="timer" aria-live="polite">
+            <span class="timer__label">Time</span>
+            <span class="timer__value" id="timerDisplay">01:30</span>
+          </div>
+          <div class="points" aria-live="polite">
+            <span class="points__label">Points</span>
+            <span class="points__value" id="pointsDisplay">0</span>
+          </div>
+          <button class="pause-button" id="pauseButton" type="button">Begin</button>
+        </div>
+
+        <div class="hud__labels" aria-label="Fire stage labels">
+          <span class="hud__labels-title">Stage labels</span>
           <div class="labels__list" id="labelBank">
             <button class="label" draggable="true" data-stage="Incipient Stage" type="button">
               Incipient Stage
@@ -36,23 +48,12 @@
             </button>
           </div>
         </div>
-
-        <div class="app__controls labels__controls" aria-label="Timer, points, and controls">
-          <div class="timer" aria-live="polite">
-            <span class="timer__label">Time Remaining</span>
-            <span class="timer__value" id="timerDisplay">01:30</span>
-          </div>
-          <div class="points" aria-live="polite">
-            <span class="points__label">Points</span>
-            <span class="points__value" id="pointsDisplay">0</span>
-          </div>
-          <button class="pause-button" id="pauseButton" type="button">Begin</button>
-        </div>
       </section>
 
-      <section class="grid" aria-label="Fire scene grid">
-        <div class="grid__overlay" id="pauseOverlay" aria-hidden="true">
-          <p>Paused</p>
+      <section class="grid is-paused" aria-label="Fire scene grid">
+        <div class="grid__overlay" id="pauseOverlay" aria-hidden="false">
+          <p>Ready to begin</p>
+          <span>Click anywhere on the grid to start.</span>
         </div>
         <div class="grid__inner" id="grid"></div>
       </section>
