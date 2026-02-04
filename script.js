@@ -481,4 +481,6 @@ document.addEventListener("keydown", (event) => {
 
 updateOverlayMessage("Ready to begin", "Click anywhere on the grid to start.");
 setPausedState(true);
+updateTimerDisplay();
+updatePointsDisplay();
 populateGrid();
