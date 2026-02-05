@@ -48,6 +48,7 @@ let completionQueue = [];
 let points = 0;
 let isReplacingCards = false;
 let lastFocusedElement = null;
+let completedScenesCount = 0;
 
 const pointsDisplay = document.getElementById("pointsDisplay");
 
@@ -254,6 +255,16 @@ const endInteraction = (message) => {
   });
 };
 
+const endInteractionForCompletion = () => {
+  const remainingTime = formatTime(remainingSeconds);
+  try {
+    window.parent.postMessage({ type: "complete" }, "*");
+  } catch (error) {
+    console.warn("[TIMER] postMessage failed", error);
+  }
+  endInteraction(`All scenes completed with ${remainingTime} remaining. Final score: ${points} points.`);
+};
+
 const revealCorrectStage = (cell, timedOut = false) => {
   const correctStage = cell.dataset.stage;
   const status = cell.querySelector(".grid__status");
@@ -275,7 +286,7 @@ const revealCorrectStage = (cell, timedOut = false) => {
 
 const replaceCellsSequentially = async () => {
   // Only replace if time remains and there are available scenes
-  if (remainingSeconds <= 0 || availableScenes.length === 0 || completionQueue.length === 0) {
+  if (remainingSeconds <= 0 || availableScenes.length === 0 || completionQueue.length === 0 || isComplete) {
     isReplacingCards = false;
     return;
   }
@@ -283,7 +294,7 @@ const replaceCellsSequentially = async () => {
   isReplacingCards = true;
 
   // Replace each completed cell one at a time
-  while (completionQueue.length > 0 && availableScenes.length > 0 && remainingSeconds > 0) {
+  while (completionQueue.length > 0 && availableScenes.length > 0 && remainingSeconds > 0 && !isComplete) {
     const cellToReplace = completionQueue.shift();
     const newScene = availableScenes.shift();
 
@@ -359,8 +370,15 @@ const handleDrop = (event, cell) => {
     cell.dataset.answered = "true";
   }
 
+  completedScenesCount += 1;
+
   // Add cell to completion queue
   completionQueue.push(cell);
+
+  if (completedScenesCount >= TOTAL_SCENES) {
+    endInteractionForCompletion();
+    return;
+  }
 
   // Check if all 9 cards are completed
   const answeredCount = cells.filter(
