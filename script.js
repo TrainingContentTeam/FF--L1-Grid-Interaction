@@ -24,9 +24,9 @@ const sceneData = [
   { stage: "Decay Stage", scene: 2 },
   { stage: "Fully Developed Stage", scene: 3 },
   { stage: "Fully Developed Stage", scene: 4 },
-  { stage: "Fully Developed Stage", scene: 5 },
+  { stage: "Growth Stage", scene: 5 },
   { stage: "Fully Developed Stage", scene: 17 },
-  { stage: "Fully Developed Stage", scene: 18 },
+  { stage: "Growth Stage", scene: 18 },
   { stage: "Growth Stage", scene: 6 },
   { stage: "Growth Stage", scene: 7 },
   { stage: "Growth Stage", scene: 8 },
@@ -57,7 +57,7 @@ const sceneImages = {
   2: "images/grid _0001_Decay 1.jpg",
   3: "images/grid _0002_Full 3.jpg",
   4: "images/grid _0003_Full 2.jpg",
-  5: "images/grid _0004_Full 1.jpg",
+  5: "images/grid _0004_Growth 6.jpg",
   6: "images/grid _0005_Growth 5.jpg",
   7: "images/grid _0006_Growth 4.jpg",
   8: "images/grid _0007_Growth 3.jpg",
@@ -70,7 +70,7 @@ const sceneImages = {
   15: "images/grid _0014_Incipient 1.jpg",
   16: "images/grid_0015_Incipient 6.jpg",
   17: "images/grid_0016_Full 5.jpg",
-  18: "images/grid_0017_Full 4.jpg",
+  18: "images/grid_0017_Growth 7.jpg",
 };
 
 const getSceneImage = (sceneNumber) => sceneImages[sceneNumber] || "";
@@ -236,6 +236,38 @@ const startInteraction = () => {
   startTimer();
 };
 
+const resetGame = () => {
+  // Reset all game state variables
+  remainingSeconds = TIME_LIMIT_SECONDS;
+  points = 0;
+  isStarted = false;
+  isComplete = false;
+  isPaused = true;
+  isReplacingCards = false;
+  usedScenes = [];
+  completionQueue = [];
+  availableScenes = [...sceneData];
+  
+  // Reset UI
+  pauseButton.textContent = "Begin";
+  updateTimerDisplay();
+  updatePointsDisplay();
+  completionMessage.textContent = "";
+  
+  // Re-enable labels
+  labels.forEach((label) => {
+    label.setAttribute("draggable", "true");
+    label.disabled = false;
+  });
+  
+  // Reset overlay
+  updateOverlayMessage("Ready to begin", "Click anywhere on the grid to start.");
+  setPausedState(true);
+  
+  // Repopulate grid
+  populateGrid();
+};
+
 const endInteraction = (message) => {
   if (isComplete) {
     return;
@@ -243,6 +275,7 @@ const endInteraction = (message) => {
   isComplete = true;
   clearInterval(timerId);
   completionMessage.textContent = message;
+  pauseButton.textContent = "Reset";
   labels.forEach((label) => {
     label.setAttribute("draggable", "false");
     label.disabled = true;
@@ -437,6 +470,7 @@ const startTimer = () => {
 
 pauseButton.addEventListener("click", () => {
   if (isComplete) {
+    resetGame();
     return;
   }
   
