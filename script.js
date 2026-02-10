@@ -246,6 +246,7 @@ const resetGame = () => {
   isReplacingCards = false;
   usedScenes = [];
   completionQueue = [];
+  completedScenesCount = 0;
   availableScenes = [...sceneData];
   
   // Reset UI
